@@ -1,0 +1,17 @@
+# これらのオーナーは、このリポジトリ内のすべてのディレクトリおよびファイルの
+# デフォルトの所有者であり、必要に応じて上書きされます
+
+* @project-admin
+
+# インフラ関連のファイル
+Dockerfile @devops-team
+docker-compose.yml @devops-team
+.github/workflows/ @devops-team
+
+# バックエンド関連のファイル
+app/api/ @backend-team
+prisma/ @backend-team
+
+# フロントエンド関連のファイル
+app/components/ @frontend-team
+app/(routes)/ @frontend-team 

@@ -1,0 +1,22 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies for bcrypt and Prisma
+RUN apk add --no-cache openssl python3 make g++
+
+COPY package.json package-lock.json* ./
+RUN npm install
+
+COPY . .
+
+# プリズマクライアントを生成
+ENV DATABASE_URL="postgresql://postgres:postgres@db:5432/shift_editor"
+RUN npx prisma generate
+
+EXPOSE 3000
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+# 開発モードで実行
+CMD ["npm", "run", "dev"] 

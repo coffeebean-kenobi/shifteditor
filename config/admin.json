@@ -1,0 +1,7 @@
+{
+  "superAdmin": {
+    "email": "admin@example.com",
+    "password": "adminPassword123",
+    "name": "システム管理者"
+  }
+} 

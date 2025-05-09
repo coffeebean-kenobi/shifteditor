@@ -175,3 +175,65 @@ pg_dump -Fc -h dev-db -U postgres shift_editor | \
 - Terraform or OCI CLI で IaC 化して再現性を確保。  
 
 以上で、OCI 上の本番環境構築と移行に必要な手順を網羅しました。 
+
+## 12. CI/CD 環境の注意点
+
+### 12.1 セキュリティ
+- 本番環境のパスワードは強力なものを使用し、定期的にローテーション
+- 環境変数ファイル（`.env.production`）のパーミッションを適切に設定
+  ```bash
+  chmod 600 .env.production
+  ```
+- GitHub Secrets の管理
+  - `OCI_SSH_PRIVATE_KEY`: 踏み台サーバ経由の接続用SSH秘密鍵
+  - `OCI_HOST`: 本番サーバのIPアドレス
+  - `OCI_USER`: 本番サーバのユーザー名
+
+### 12.2 バックアップ
+- データベースの定期的なバックアップを設定
+  ```bash
+  #!/bin/bash
+  TIMESTAMP=$(date +%Y%m%d%H%M%S)
+  BACKUP_DIR=~/backups
+  
+  docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U postgres shift_editor > $BACKUP_DIR/shift_editor_$TIMESTAMP.sql
+  ```
+- cronで定期実行を設定
+  ```bash
+  # 毎日午前3時に実行
+  0 3 * * * ~/app/backup-db.sh
+  ```
+
+### 12.3 モニタリング
+- アプリケーションログの確認
+  ```bash
+  # リアルタイムログの確認
+  docker-compose -f docker-compose.prod.yml logs -f app
+  
+  # 特定のコンテナのログを確認
+  docker-compose -f docker-compose.prod.yml logs app
+  ```
+
+### 12.4 トラブルシューティング
+- デプロイ失敗時の確認手順
+  1. GitHub Actionsのログを確認
+  2. サーバー上で直接ログを確認
+  3. コンテナの状態確認
+     ```bash
+     docker-compose -f docker-compose.prod.yml ps
+     docker-compose -f docker-compose.prod.yml logs
+     ```
+  4. データベース接続の確認
+     ```bash
+     docker-compose -f docker-compose.prod.yml exec db psql -U postgres -d shift_editor
+     ```
+
+### 12.5 デプロイフロー
+1. `main`ブランチへのプッシュで自動デプロイ
+2. GitHub Actionsのワークフローページから手動デプロイも可能
+3. デプロイ完了後、以下の確認を実施
+   - アプリケーションの動作確認
+   - データベース接続の確認
+   - ログの確認
+
+以上で、OCI 上の本番環境構築と移行に必要な手順を網羅しました。 

@@ -1,0 +1,51 @@
+name: Deploy to OCI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          
+      - name: Add hosts to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 140.238.60.216 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 140.238.36.70 >> ~/.ssh/known_hosts
+          
+      - name: Create SSH config
+        run: |
+          mkdir -p ~/.ssh
+          cat > ~/.ssh/config << 'EOF'
+          Host bastion02
+              HostName 140.238.60.216
+              User t-tasaka
+              IdentityFile ~/.ssh/id_rsa
+              ForwardAgent yes
+
+          Host tasakasv01
+              HostName 140.238.36.70
+              User t-tasaka
+              ProxyJump bastion02
+          EOF
+          chmod 600 ~/.ssh/config
+          
+      - name: Deploy to OCI
+        run: |
+          # ファイルを転送
+          scp -F ~/.ssh/config docker-compose.prod.yml tasakasv01:~/app/
+          scp -F ~/.ssh/config scripts/deploy-oci.sh tasakasv01:~/app/
+          
+          # デプロイスクリプトを実行
+          ssh -F ~/.ssh/config tasakasv01 "cd ~/app && chmod +x deploy-oci.sh && ./deploy-oci.sh" 

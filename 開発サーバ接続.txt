@@ -1,0 +1,16 @@
+# 踏み台サーバ2
+Host bastion02
+    HostName 140.238.60.216
+    User t-tasaka
+    IdentityFile ~/.ssh/oci_key
+    ForwardAgent yes
+
+# sandboxサーバ
+Host tasakasv01
+    HostName 140.238.36.70
+    User t-tasaka
+    ProxyJump bastion02
+
+## 接続コマンド(エージェントフォワード設定ずみ)
+
+ssh tasakasv01

@@ -63,9 +63,8 @@ Docker開発環境の詳細な利用方法は[コントリビューションガ�
 
 | 環境 | ホスティング | 役割 |
 |------|--------------|------|
-| **本番** | **OCI (Oracle Cloud Infrastructure)** | Container Instance + Database for PostgreSQL |
-| **開発** | **ローカル Docker Compose** | `app` + `db` コンテナ、ホットリロード付き |
-| **プレビュー (任意)** | Vercel | Pull Request ごとに自動生成される一時環境 |
+| **本番** | OCI | 本番環境 |
+| **開発** | Docker Compose | ローカル開発環境 |
 
 - フロントエンド: Next.js, ShadCN UI, React Hook Form, FullCalendar
 - バックエンド: Next.js API Routes, NextAuth.js, Prisma ORM

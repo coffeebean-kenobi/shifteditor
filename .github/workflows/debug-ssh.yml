@@ -1,0 +1,35 @@
+name: Debug SSH Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-ssh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug SSH Setup
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          echo "=== SSH Key Content ==="
+          cat ~/.ssh/id_ed25519
+          echo "=== SSH Directory Permissions ==="
+          ls -la ~/.ssh/
+          echo "=== GitHub Host Key ==="
+          cat ~/.ssh/known_hosts
+      
+      - name: Test SSH Connection
+        run: |
+          echo "=== Testing SSH Connection ==="
+          ssh -vT git@github.com || true
+          echo "=== Testing Repository Access ==="
+          ssh -vT git@github.com:coffeebean-kenobi/shifteditor.git || true
+      
+      - name: Checkout with Debug
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          fetch-depth: 1
+          repository: coffeebean-kenobi/shifteditor 
